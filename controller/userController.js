@@ -1,4 +1,4 @@
-const appModel = require(`../model/userModel.js`)
+const userModel = require(`../model/userModel.js`)
 require(`dotenv`);
 const bcrypt = require(`bcrypt`);
 const jwt = require(`jsonwebtoken`);
@@ -14,7 +14,7 @@ const signUp = async (req, res) => {
         // check if user exists
         const { fullName, email, password } = req.body;
 
-        const emailExist = await appModel.findOne({ email });
+        const emailExist = await userModel.findOne({ email });
         if (emailExist) {
             return res.status(400).json(`User with email already exist.`);
         } else {
@@ -23,7 +23,7 @@ const signUp = async (req, res) => {
             //perform an encrytion of the salted password
             const hashedPassword = await bcrypt.hash(password, saltedPassword);
             // create object of the body
-            const user = new appModel({
+            const user = new userModel({
                 fullName,
                 email,
                 password: hashedPassword
@@ -31,7 +31,7 @@ const signUp = async (req, res) => {
 
             const userToken = jwt.sign(
                 { id: user._id, email: user.email },
-                process.env.jwt_secret,
+                process.env.JWT_SECRET,
                 { expiresIn: "10 Minutes" }
             );
             const verifyLink = `${req.protocol}://${req.get(
@@ -61,9 +61,9 @@ const verifyEmail = async (req, res) => {
         // Extract the token from the request params
         const { token } = req.params;
         // Extract the email from the verified token
-        const { email } = jwt.verify(token, process.env.jwt_secret);
+        const { email } = jwt.verify(token, process.env.JWT_SECRET);
         // Find the user with the email
-        const user = await appModel.findOne({ email });
+        const user = await userModel.findOne({ email });
         // Check if the user is still in the database
         if (!user) {
             return res.status(404).json({
@@ -97,7 +97,7 @@ const verifyEmail = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const existingUser = await appModel.findOne({
+        const existingUser = await userModel.findOne({
             email
         });
         if (!existingUser) {
@@ -127,7 +127,7 @@ const loginUser = async (req, res) => {
                 userId: existingUser._id,
                 email: existingUser.email,
             },
-            process.env.jwt_secret,
+            process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
 
@@ -147,7 +147,7 @@ const resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
         // Find the user with the email
-        const user = await appModel.findOne({ email });
+        const user = await userModel.findOne({ email });
         // Check if the user is still in the database
         if (!user) {
             return res.status(404).json({
@@ -162,7 +162,7 @@ const resendVerificationEmail = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ email: user.email }, process.env.jwt_secret, {
+        const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
             expiresIn: "20mins",
         });
         const verifyLink = `${req.protocol}://${req.get(
@@ -192,7 +192,7 @@ const forgotPassword = async (req, res) => {
         const { email } = req.body;
 
         // Check if the email exists in the database
-        const user = await appModel.findOne({ email });
+        const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -200,7 +200,7 @@ const forgotPassword = async (req, res) => {
         }
 
         // Generate a reset token
-        const resetToken = jwt.sign({ email: user.email }, process.env.jwt_secret, {
+        const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
             expiresIn: "30m",
         });
         const resetLink = `${req.protocol}://${req.get(
@@ -232,10 +232,10 @@ const resetPassword = async (req, res) => {
         const { password } = req.body;
 
         // Verify the user's token and extract the user's email from the token
-        const { email } = jwt.verify(token, process.env.jwt_secret);
+        const { email } = jwt.verify(token, process.env.JWT_SECRET);
 
         // Find the user by ID
-        const user = await appModel.findOne({ email });
+        const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -267,10 +267,10 @@ const changePassword = async (req, res) => {
         const { password, existingPassword } = req.body;
 
         // Verify the user's token and extract the user's email from the token
-        const { email } = jwt.verify(token, process.env.jwt_secret);
+        const { email } = jwt.verify(token, process.env.JWT_SECRET);
 
         // Find the user by ID
-        const user = await appModel.findOne({ email });
+        const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({
                 message: "User not found.",
@@ -310,7 +310,7 @@ const changePassword = async (req, res) => {
 const makeAdmin = async(req, res)=> {
     try {
         const {userId} = req.params
-        const user = await appModel.findById(userId)
+        const user = await userModel.findById(userId)
         if(!user){
             return res.status(404).json(`User with ID ${userId} was not found`)
         }
@@ -324,7 +324,7 @@ const makeAdmin = async(req, res)=> {
 
 const getAll = async(req,res)=>{
     try {
-     const users = await appModel.find()
+     const users = await userModel.find()
      if(users.length <= 0){
         return res.status(404).json(`No available users`)
      }else{
@@ -340,7 +340,7 @@ const getOne = async (req, res) => {
     try {
         const {userId} = req.params
 
-        const user = await appModel.findById(userId)
+        const user = await userModel.findById(userId)
         if(!user){
             return res.status(404).json(`User not found.`)
         }
@@ -356,11 +356,11 @@ const getOne = async (req, res) => {
 const deleteUser = async (req, res) =>{
     try {
         const {userId} = req.params
-        const user = await appModel.findById(userId)
+        const user = await userModel.findById(userId)
         if(!user){
             return res.status(404).json(`User not found.`)
         }
-        const deleteUser = await appModel.findByIdAndDelete(userId)
+        const deleteUser = await userModel.findByIdAndDelete(userId)
         res.status(200).json(`User deleted successfully.`)
     } catch (error) {
         res.status(500).json(error.message)

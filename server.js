@@ -3,7 +3,7 @@ const cors = require(`cors`)
 require('./config/dbConfig.js')
 const appRouter = require(`./router/userRouter.js`)
 const todoRouter = require(`./router/todoRouter.js`)
-const port = process.env.port
+const port = process.env.PORT
 require(`dotenv`).config()
 const app = express();
 app.use(express.json())

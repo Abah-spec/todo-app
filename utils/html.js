@@ -56,7 +56,7 @@ const signUpTemplate = (verifyLink, fullName) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Welcome to Midas To-Do App!</h1>
+            <h1>Welcome to pat's world To-Do App!</h1>
           </div>
           <div class="content">
             <p>Hello ${fullName},</p>

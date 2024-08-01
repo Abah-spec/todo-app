@@ -17,7 +17,7 @@ const signUp = async (req, res) => {
         const emailExist = await userModel.findOne({ email });
         if (emailExist) {
             return res.status(400).json(`User with email already exist.`);
-        } else {
+        } 
             //perform an encryption using salt
             const saltedPassword = await bcrypt.genSalt(10);
             //perform an encrytion of the salted password
@@ -34,9 +34,7 @@ const signUp = async (req, res) => {
                 process.env.JWT_SECRET,
                 { expiresIn: "10 Minutes" }
             );
-            const verifyLink = `${req.protocol}://${req.get(
-                "host"
-            )}/api/v1/user/verify/${userToken}`;
+            const verifyLink = `https://todo-app-nujx.onrender.com/api/v1/user/verify/${userToken}`;
 
             await user.save();
             await sendMail({
@@ -48,7 +46,7 @@ const signUp = async (req, res) => {
                 message: `Welcome ${user.fullName} kindly check your gmail to access the link to verify your email`,
                 data: user,
             });
-        }
+        
     } catch (error) {
         res.status(500).json({
             message: error.message,
@@ -340,7 +338,7 @@ const getOne = async (req, res) => {
     try {
         const {userId} = req.params
 
-        const user = await userModel.findById(userId)
+        const user = await userModel.findById(userId).populate("todo")
         if(!user){
             return res.status(404).json(`User not found.`)
         }
